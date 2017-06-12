@@ -12,7 +12,8 @@
     "express": "~4.15.0",
     "mysql": "~2.13.0",
     "body-parser": "~1.17.0",
-    "sha1": "^1.1.1"
+    "sha1": "^1.1.1",
+    "valid-url": "^1.0.9"
   },
   "devDependencies": {
     "nodemon": "~1.11.0"

@@ -11,7 +11,6 @@ var connection = mysql.createConnection({
     'database' : config.db.dbname
 });
 
-
 connection.connect(function(err) {
     if (err) {
         console.error('error connecting: ' + err.stack);
@@ -21,11 +20,9 @@ connection.connect(function(err) {
     console.log('connected as id ' + connection.threadId);
 });
 
-
 function getRandomInt(min, max) {
     return Math.random() * (max - min) + min;
 };
-
 
 function insertRow(url, code) {
 
@@ -107,7 +104,7 @@ function generateUniqueCode() {
 
 module.exports = {
     save: function (url) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function(resolve, reject) {
             getRowByUrl(url).then(function (row) {
                 if (!row) {
                     generateUniqueCode().then(function (code) {
@@ -126,4 +123,21 @@ module.exports = {
             });
         });
     },
+
+    getUrlByCode: function(code) {
+        return new Promise(function(resolve, reject) {
+            getRowByCode(code).then(function (row) {
+                if (!row) {
+                    resolve(null);
+                    return;
+                } else {
+                    resolve(row.url);
+                    return;
+                }
+            }).catch(function (error) {
+                reject(error);
+                return;
+            });
+        });
+    }
 };
