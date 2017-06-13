@@ -1,23 +1,20 @@
 "use strict";
 
-var config = require('../../config');
-var mysql = require('mysql');
-var sha1 = require('sha1');
+const config = require('../../config');
+const mysql = require('mysql');
+const sha1 = require('sha1');
 
-var connection = mysql.createConnection({
+const connection = mysql.createConnection({
     'host': config.db.host,
     'user': config.db.user,
     'password' : config.db.password,
     'database' : config.db.dbname
 });
 
-connection.connect(function(err) {
-    if (err) {
-        console.error('error connecting: ' + err.stack);
-        return;
-    }
-
-    console.log('connected as id ' + connection.threadId);
+connection.connect((err) => {
+    if (err)
+        return console.error('error connecting: ' + err.stack);
+    return console.log('connected as id ' + connection.threadId);
 });
 
 function getRandomInt(min, max) {
@@ -25,78 +22,56 @@ function getRandomInt(min, max) {
 };
 
 function insertRow(url, code) {
-
-    console.log(url, mysql.escape(url));
-
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
         var row = {
             'url': url,
             'code': code
         };
-        var query = connection.query('INSERT INTO link SET ?', row, function (error, results) {
-            if (error) {
-                reject(error)
-            };
-            resolve(row);
+        connection.query('INSERT INTO link SET ?', row, (error, results) => {
+            if (error) return reject(error);
+            return resolve(row);
         });
     });
 };
 
 function getRowByUrl(url) {
-    return new Promise(function(resolve, reject) {
-        var query = connection.query('SELECT code FROM link WHERE `url` = ?', url , function (error, results) {
-            if (error) {
-                reject(error);
-                return;
-            }
-            if (results[0] !== undefined) {
-                resolve(results[0]);
-                return;
-            }
-            resolve(null);
-            return;
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT code FROM link WHERE `url` = ?', url , (error, results) => {
+            if (error) return reject(error);
+            if (results[0] !== undefined)
+                return resolve(results[0]);
+            return resolve(null);
         });
     });
 };
 
 function getRowByCode(code) {
 
-    return new Promise(function(resolve, reject) {
-        var query = connection.query('SELECT url FROM link WHERE `code` = ?', code, function (error, results) {
-            if (error) {
-                reject(error);
-                return;
-            }
-            if (results[0] !== undefined) {
-                resolve(results[0]);
-                return;
-            }
-            resolve(null);
-            return;
-
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT url FROM link WHERE `code` = ?', code, (error, results) => {
+            if (error) return reject(error);
+            if (results[0] !== undefined)
+                return resolve(results[0]);
+            return resolve(null);
         });
     });
 };
 
 function generateUniqueCode() {
 
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
         function generate() {
-            var length = 6;
+            const length = 6;
             var hash = sha1(new Date().getTime());
             var start = getRandomInt(0, 34);
             var code = hash.substring(start, start+length).toUpperCase();
+            getRowByCode(code).then((result) => {
+                if (result !== null) generate();
+                return resolve(code);
 
-            getRowByCode(code).then(function(result) {
-                if (result !== null) {
-                    generate();
-                }
-                resolve(code);
-                return;
-            }).catch(function (error) {
-                reject(error);
-                return;
-            })
+            }).catch((error) => {
+                return reject(error);
+            });
         }
         generate();
     });
@@ -104,39 +79,31 @@ function generateUniqueCode() {
 
 module.exports = {
     save: function (url) {
-        return new Promise(function(resolve, reject) {
-            getRowByUrl(url).then(function (row) {
+        return new Promise((resolve, reject) => {
+            getRowByUrl(url).then((row) => {
                 if (!row) {
-                    generateUniqueCode().then(function (code) {
+                    generateUniqueCode().then((code) => {
                         return insertRow(url, code);
-                    }).then(function (row) {
-                        resolve(row.code);
-                        return;
+                    }).then((row) => {
+                        return resolve(row.code);
                     });
-                } else {
-                    resolve(row.code);
-                    return;
-                }
+                } else
+                    return resolve(row.code);
             }).catch(function (error) {
-                reject(error);
-                return;
+                return reject(error);
             });
         });
     },
 
     getUrlByCode: function(code) {
-        return new Promise(function(resolve, reject) {
-            getRowByCode(code).then(function (row) {
-                if (!row) {
-                    resolve(null);
-                    return;
-                } else {
-                    resolve(row.url);
-                    return;
-                }
-            }).catch(function (error) {
-                reject(error);
-                return;
+        return new Promise((resolve, reject) => {
+            getRowByCode(code).then((row) => {
+                if (!row)
+                    return resolve(null);
+                else
+                    return resolve(row.url);
+            }).catch((error) => {
+                return reject(error);
             });
         });
     }

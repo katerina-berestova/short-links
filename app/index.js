@@ -1,10 +1,10 @@
 "use strict";
 
-var validUrl = require('valid-url');
-var urlModel = require('./model/url');
-var config = require('./../config');
+const validUrl = require('valid-url');
+const urlModel = require('./model/url');
+const config = require('./../config');
 
-var responseCodes = {
+const responseCodes = {
     httpOK: 200,
     httpCreated: 201,
     httpBadRequest: 400,
@@ -13,45 +13,39 @@ var responseCodes = {
 };
 
 function cropLastSlash(str) {
-    if(str.substr(-1) === '/') {
+    if (str.substr(-1) === '/')
         return str.substr(0, str.length - 1);
-    }
     return str;
 };
 
 module.exports = function(app) {
-    app.listen(config.port, function(){
+    app.listen(config.port, () => {
         console.log('Server is listening on port 8000');
     });
 
-    app.get('/', function (req, res) {
+    app.get('/', (req, res) => {
         res.status(responseCodes.httpOK).send('API is running');
     });
 
-    app.get('/:code', function (req, res) {
-        urlModel.getUrlByCode(req.params.code).then(function (url) {
-            if (!url) {
-                res.status(responseCodes.httpNotFound).send('Url for this code haven\'t been found on the server');
-                return;
-            }
-            res.redirect(url);
-            return;
-        }, function (reason) {
+    app.get('/:code', (req, res) => {
+        urlModel.getUrlByCode(req.params.code).then((url) => {
+            if (!url)
+                return res.status(responseCodes.httpNotFound).send('Url for this code haven\'t been found on the server');
+            return res.redirect(url);
+        }, (reason) => {
             console.log(reason);
-            res.status(responseCodes.httpError).send('Internal error');
-            return;
+            return res.status(responseCodes.httpError).send('Internal error');
         });
     });
 
-    app.post('/', function(req, res) {
+    app.post('/', (req, res) => {
         if (req.body !== undefined && req.body.url !== undefined && validUrl.isHttpUri(req.body.url, true)) {
             var url = cropLastSlash(req.body.url);
-            urlModel.save(url).then(function (code) {
-                res.status(responseCodes.httpCreated).send(config.host + '/' + code);
-                return;
-            }, function (reason) {
-                res.status(responseCodes.httpError).send('Internal error');
-                return;
+            urlModel.save(url).then((code) => {
+                return res.status(responseCodes.httpCreated).send(config.host + ':' + config.port + '/' + code);
+            }, (reason) => {
+                console.log(reason);
+                return res.status(responseCodes.httpError).send('Internal error');
             });
 
         } else {
