@@ -4,7 +4,7 @@
   "description": "Short links generator",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js"
+    "start": "nodemon server.js"
   },
   "author": "Berestova Ekaterina",
   "license": "BSD-2-Clause",

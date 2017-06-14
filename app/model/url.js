@@ -4,14 +4,10 @@ const config = require('../../config');
 const mysql = require('mysql');
 const sha1 = require('sha1');
 
-const connection = mysql.createConnection({
-    'host': config.db.host,
-    'user': config.db.user,
-    'password' : config.db.password,
-    'database' : config.db.dbname
-});
+const {host, user, database, password} = config.db;
+const connection = mysql.createConnection({ host, user, database, password });
 
-connection.connect((err) => {
+connection.connect(err => {
     if (err)
         return console.error('error connecting: ' + err.stack);
     return console.log('connected as id ' + connection.threadId);
@@ -23,13 +19,10 @@ function getRandomInt(min, max) {
 
 function insertRow(url, code) {
     return new Promise((resolve, reject) => {
-        var row = {
-            'url': url,
-            'code': code
-        };
+        const row = { url, code };
         connection.query('INSERT INTO link SET ?', row, (error, results) => {
             if (error) return reject(error);
-            return resolve(row);
+            resolve(row);
         });
     });
 };
@@ -38,9 +31,7 @@ function getRowByUrl(url) {
     return new Promise((resolve, reject) => {
         connection.query('SELECT code FROM link WHERE `url` = ?', url , (error, results) => {
             if (error) return reject(error);
-            if (results[0] !== undefined)
-                return resolve(results[0]);
-            return resolve(null);
+            resolve(results[0]);
         });
     });
 };
@@ -50,9 +41,7 @@ function getRowByCode(code) {
     return new Promise((resolve, reject) => {
         connection.query('SELECT url FROM link WHERE `code` = ?', code, (error, results) => {
             if (error) return reject(error);
-            if (results[0] !== undefined)
-                return resolve(results[0]);
-            return resolve(null);
+            resolve(results[0]);
         });
     });
 };
@@ -65,46 +54,38 @@ function generateUniqueCode() {
             var hash = sha1(new Date().getTime());
             var start = getRandomInt(0, 34);
             var code = hash.substring(start, start+length).toUpperCase();
-            getRowByCode(code).then((result) => {
-                if (result !== null) generate();
-                return resolve(code);
+            getRowByCode(code).then(result => {
+                if (!result) generate();
+                resolve(code);
 
-            }).catch((error) => {
-                return reject(error);
-            });
+            }).catch(error => reject(error));
         }
         generate();
     });
 };
 
-module.exports = {
-    save: function (url) {
-        return new Promise((resolve, reject) => {
-            getRowByUrl(url).then((row) => {
-                if (!row) {
-                    generateUniqueCode().then((code) => {
-                        return insertRow(url, code);
-                    }).then((row) => {
-                        return resolve(row.code);
-                    });
-                } else
-                    return resolve(row.code);
-            }).catch(function (error) {
-                return reject(error);
-            });
-        });
-    },
-
-    getUrlByCode: function(code) {
-        return new Promise((resolve, reject) => {
-            getRowByCode(code).then((row) => {
-                if (!row)
-                    return resolve(null);
-                else
-                    return resolve(row.url);
-            }).catch((error) => {
-                return reject(error);
-            });
-        });
-    }
+function save(url) {
+    return new Promise((resolve, reject) => {
+        getRowByUrl(url).then(row => {
+            if (!row) {
+                generateUniqueCode().then(code => {
+                    return insertRow(url, code)
+                }).then(row => resolve(row.code));
+            } else
+                resolve(row.code);
+        }).catch(error => reject(error));
+    });
 };
+
+function getUrlByCode(code) {
+    return new Promise((resolve, reject) => {
+        getRowByCode(code).then(row => {
+            if (!row)
+                resolve(null);
+            else
+                resolve(row.url);
+        }).catch(error => reject(error));
+    });
+};
+
+module.exports = { save, getUrlByCode };

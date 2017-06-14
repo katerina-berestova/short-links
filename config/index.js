@@ -3,7 +3,7 @@
 module.exports = {
     db: {
         host: '',
-        dbname: '',
+        database: '',
         user: '',
         password: ''
     },
