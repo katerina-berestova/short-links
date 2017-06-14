@@ -1,12 +1,12 @@
 "use strict";
 
 module.exports = {
-    db: {
-        host: '',
-        database: '',
-        user: '',
-        password: ''
-    },
+  db: {
     host: '',
-    port: '',
+    database: '',
+    user: '',
+    password: ''
+  },
+  host: '',
+  port: '',
 };
