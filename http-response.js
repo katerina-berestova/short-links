@@ -16,13 +16,12 @@ module.exports = { responseCodes, Created, Success, Redirect, BadRequest, NotFou
 
 function Success(data) {
   this.code = responseCodes.httpOK;
-  if (data) this.data = data;
-  else this.data = 'Success';
+  this.data = data || 'Success';
 }
 
 function Created(data) {
   this.code = responseCodes.httpCreated;
-  this.data = data;
+  this.data = data || 'Created';
 }
 
 function Redirect(url) {
@@ -30,17 +29,17 @@ function Redirect(url) {
   this.data = url;
 }
 
-function BadRequest() {
+function BadRequest(data) {
   this.code = responseCodes.httpBadRequest;
-  this.data = 'Bad request';
+  this.data = data || 'Bad request';
 }
 
-function NotFound() {
+function NotFound(data) {
   this.code = responseCodes.httpNotFound;
-  this.data = 'Not found';
+  this.data = data || 'Not found';
 }
 
-function InternalError() {
+function InternalError(data) {
   this.code = responseCodes.httpError;
-  this.data = 'Internal server error';
+  this.data = data || 'Internal server error';
 }
