@@ -2,55 +2,60 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const app = express();
-app.use(bodyParser.json());
 const validUrl = require('valid-url');
+const debug = require('debug');
 const urlModel = require('./app/model/url');
+const httpResponse = require('./http-response');
 const config = require('./config');
 const { host, port } = config;
+const app = express();
 
-const responseCodes = {
-    httpOK: 200,
-    httpCreated: 201,
-    httpBadRequest: 400,
-    httpNotFound: 404,
-    httpError: 500,
-};
-
-function cropLastSlash(str) {
-  return str.slice(-1) === '/' ? str.slice(0, -1) : str;
-}
+app.use(bodyParser.json());
 
 app.listen(port, () => console.log(`Server is listening on port  ${port}`));
 
 app.get('/', (req, res) => {
-  res.status(responseCodes.httpOK).send('API is running');
+  return respond(new httpResponse.Success('API is running'), res);
 });
 
 app.get('/:code', (req, res) => {
   urlModel.getUrlByCode(req.params.code).then(url => {
-  if (url) return res.redirect(url);
-    res.status(responseCodes.httpNotFound).send('Url for this code haven\'t been found on the server');
+
+    if (url)
+      return respond(new httpResponse.Redirect(url), res);
+
+    respond(new httpResponse.NotFound(), res);
   }, reason => {
-    console.debug(reason);
-    return res.status(responseCodes.httpError).send('Internal server error');
+    debug(reason);
+
+    respond(new httpResponse.InternalError(), res);
   });
 });
 
 app.post('/', (req, res) => {
   var url = req.body && req.body.url;
 
-  if (!validUrl.isHttpUri(req.body.url, true)) {
-    res.status(responseCodes.httpBadRequest).send('Request is invalid');
-  }
+  if (!validUrl.isHttpUri(url, true))
+    return respond(new httpResponse.BadRequest(), res);
 
   url = cropLastSlash(url);
 
   urlModel.save(url).then(
-    code => res.status(responseCodes.httpCreated).send(`${host}:${port}/${code}`),
+    code => respond(new httpResponse.Created(`${host}:${port}/${code}`), res),
     reason => {
-        console.debug(reason);
-      res.status(responseCodes.httpError).send('Internal server error');
+      debug(reason);
+      respond(new httpResponse.InternalError(), res);
     }
   );
 });
+
+function respond(result, response) {
+  if (result.code === httpResponse.responseCodes.httpRedirect) {
+    return response.redirect(result.data);
+  }
+  response.status(result.code).send(result.data);
+}
+
+function cropLastSlash(str) {
+  return str.slice(-1) === '/' ? str.slice(0, -1) : str;
+}
