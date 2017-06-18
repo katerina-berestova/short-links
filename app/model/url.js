@@ -44,9 +44,9 @@ function get(params) {
 function createCode() {
   return new Promise((resolve, reject) => {
     function generate() {
-      var code = codegenerator.create();
+      const code = codegenerator.create();
       get({ select: 'url', from: 'link', where: { code } }).then(result => {
-        if (!result) generate();
+        if (result) return generate();
         resolve(code);
       }).catch(reject);
     }
@@ -56,13 +56,13 @@ function createCode() {
 
 function save(url) {
   return new Promise((resolve, reject) => {
-    get({ select: 'code', from: 'link', where: { url } }).then(row => {
-      if (!row) {
-        createCode().then(code => {
-          return insert(url, code);
-        }).then(row => resolve(row.code));
-      } else
-      resolve(row.code);
+    const options = { select: 'code', from: 'link', where: { url } };
+    get(options).then(row => {
+      if (row) return resolve(row.code);
+
+      createCode()
+        .then(code => insert(url, code))
+        .then(row => resolve(row.code));
     }).catch(reject);
   });
 }

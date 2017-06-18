@@ -1,18 +1,14 @@
 "use strict";
 
-var code;
-var data;
-
 const responseCodes = {
   httpOK: 200,
   httpCreated: 201,
-  httpRedirect: 302,
   httpBadRequest: 400,
   httpNotFound: 404,
   httpError: 500,
 };
 
-module.exports = { responseCodes, Created, Success, Redirect, BadRequest, NotFound, InternalError };
+module.exports = { Created, Success, BadRequest, NotFound, InternalError };
 
 function Success(data) {
   this.code = responseCodes.httpOK;
@@ -22,11 +18,6 @@ function Success(data) {
 function Created(data) {
   this.code = responseCodes.httpCreated;
   this.data = data || 'Created';
-}
-
-function Redirect(url) {
-  this.code = responseCodes.httpRedirect;
-  this.data = url;
 }
 
 function BadRequest(data) {

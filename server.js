@@ -22,7 +22,7 @@ app.get('/:code', (req, res) => {
   urlModel.getUrlByCode(req.params.code).then(url => {
 
     if (url)
-      return respond(new httpResponse.Redirect(url), res);
+      return res.redirect(url);
 
     respond(new httpResponse.NotFound(), res);
   }, reason => {
@@ -50,10 +50,8 @@ app.post('/', (req, res) => {
 });
 
 function respond(result, response) {
-  if (result.code === httpResponse.responseCodes.httpRedirect) {
-    return response.redirect(result.data);
-  }
-  response.status(result.code).send(result.data);
+  const { code, data } = result;
+  response.status(code).send(data);
 }
 
 function cropLastSlash(str) {
