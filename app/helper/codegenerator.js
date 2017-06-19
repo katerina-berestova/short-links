@@ -1,3 +1,6 @@
+/**
+ * Module which generates random code of defined length for url
+ */
 "use strict";
 
 const sha1 = require('sha1');

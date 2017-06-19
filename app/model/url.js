@@ -1,3 +1,6 @@
+/**
+ * Module that persists and retrieves data from the database
+ */
 "use strict";
 
 const mysql = require('mysql');
@@ -57,6 +60,7 @@ function createCode() {
 function save(url) {
   return new Promise((resolve, reject) => {
     const options = { select: 'code', from: 'link', where: { url } };
+
     get(options).then(row => {
       if (row) return resolve(row.code);
 

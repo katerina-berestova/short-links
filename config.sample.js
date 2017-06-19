@@ -1,3 +1,6 @@
+/**
+ * Example of config
+ */
 "use strict";
 
 module.exports = {

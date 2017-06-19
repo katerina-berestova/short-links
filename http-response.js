@@ -1,3 +1,6 @@
+/**
+ * Module which provides http responses (status codes and data)
+ */
 "use strict";
 
 const responseCodes = {

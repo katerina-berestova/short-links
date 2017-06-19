@@ -1,3 +1,6 @@
+/**
+ * Module that gets and retrieve data from the REST API
+ */
 "use strict";
 
 const express = require('express');
@@ -21,8 +24,7 @@ app.get('/', (req, res) => {
 app.get('/:code', (req, res) => {
   urlModel.getUrlByCode(req.params.code).then(url => {
 
-    if (url)
-      return res.redirect(url);
+    if (url) return res.redirect(url);
 
     respond(new httpResponse.NotFound(), res);
   }, reason => {
