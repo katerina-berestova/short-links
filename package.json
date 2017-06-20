@@ -1,0 +1,22 @@
+{
+  "name": "short-links",
+  "version": "1.0.0",
+  "description": "Short links generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "author": "Berestova Ekaterina",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "body-parser": "~1.17.0",
+    "debug": "^2.6.8",
+    "express": "~4.15.0",
+    "mysql": "~2.13.0",
+    "sha1": "^1.1.1",
+    "valid-url": "^1.0.9"
+  },
+  "devDependencies": {
+    "nodemon": "~1.11.0"
+  }
+}
